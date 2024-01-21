@@ -1,6 +1,7 @@
 import time
 import os
 import math
+
 try:
     from robot_hat import Pin, ADC, PWM, Servo, fileDB
     from robot_hat import Grayscale_Module, Ultrasonic
@@ -9,8 +10,16 @@ except ImportError:
     from sim_robot_hat import Pin, ADC, PWM, Servo, fileDB
     from sim_robot_hat import Grayscale_Module, Ultrasonic
     from sim_robot_hat import reset_mcu, run_command
+
 import logging
+logging_format = "%(asctime)s: %(message)s"
+logging.basicConfig(format=logging_format, level=logging.INFO,datefmt="%H:%M:%S")
+logging.getLogger().setLevel(logging.DEBUG)
+
+from logdecorator import log_on_start, log_on_end, log_on_error
+
 import atexit
+
 reset_mcu()
 time.sleep(0.2)
 
@@ -118,9 +127,9 @@ class Picarx(object):
         elif speed < 0:
             direction = -1 * self.cali_dir_value[motor]
         speed = abs(speed)
-        if speed != 0:
-            speed = int(speed /2 ) + 50
-        speed = speed - self.cali_speed_value[motor]
+        # if speed != 0:
+        #     speed = int(speed /2 ) + 50
+        # speed = speed - self.cali_speed_value[motor]
         if direction < 0:
             self.motor_direction_pins[motor].high()
             self.motor_speed_pins[motor].pulse_width_percent(speed)
@@ -259,9 +268,15 @@ class Picarx(object):
             self.config_flie.set("cliff_reference", self.cliff_reference)
         else:
             raise ValueError("grayscale reference must be a 1*3 list")
+        
+    def stopping_motors(self):
+        self.set_motor_speed(1, 0)
+        self.set_motor_speed(2, 0)
 
 if __name__ == "__main__":
     px = Picarx()
-    px.forward(50)
+    atexit.register(px.stopping_motors)
+
+    px.forward(100)
     time.sleep(1)
     px.stop()
