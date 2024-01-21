@@ -193,39 +193,74 @@ class Picarx(object):
         self.set_motor_speed(1, speed)
         self.set_motor_speed(2, speed)
 
-    def backward(self, speed):
-        current_angle = self.dir_current_angle
-        if current_angle != 0:
-            abs_current_angle = abs(current_angle)
-            if abs_current_angle > self.DIR_MAX:
-                abs_current_angle = self.DIR_MAX
-            power_scale = (100 - abs_current_angle) / 100.0 
-            if (current_angle / abs_current_angle) > 0:
-                self.set_motor_speed(1, -1*speed)
-                self.set_motor_speed(2, speed * power_scale)
-            else:
-                self.set_motor_speed(1, -1*speed * power_scale)
-                self.set_motor_speed(2, speed )
-        else:
-            self.set_motor_speed(1, -1*speed)
-            self.set_motor_speed(2, speed)  
+    # def backward(self, speed):
+    #     current_angle = self.dir_current_angle
+    #     if current_angle != 0:
+    #         abs_current_angle = abs(current_angle)
+    #         if abs_current_angle > self.DIR_MAX:
+    #             abs_current_angle = self.DIR_MAX
+    #         power_scale = (100 - abs_current_angle) / 100.0 
+    #         if (current_angle / abs_current_angle) > 0:
+    #             self.set_motor_speed(1, -1*speed)
+    #             self.set_motor_speed(2, speed * power_scale)
+    #         else:
+    #             self.set_motor_speed(1, -1*speed * power_scale)
+    #             self.set_motor_speed(2, speed )
+    #     else:
+    #         self.set_motor_speed(1, -1*speed)
+    #         self.set_motor_speed(2, speed)  
+
+    # def forward(self, speed):
+    #     current_angle = self.dir_current_angle
+    #     if current_angle != 0:
+    #         abs_current_angle = abs(current_angle)
+    #         if abs_current_angle > self.DIR_MAX:
+    #             abs_current_angle = self.DIR_MAX
+    #         power_scale = (100 - abs_current_angle) / 100.0
+    #         if (current_angle / abs_current_angle) > 0:
+    #             self.set_motor_speed(1, 1*speed * power_scale)
+    #             self.set_motor_speed(2, -speed) 
+    #         else:
+    #             self.set_motor_speed(1, speed)
+    #             self.set_motor_speed(2, -1*speed * power_scale)
+    #     else:
+    #         self.set_motor_speed(1, speed)
+    #         self.set_motor_speed(2, -1*speed)                  
+        
 
     def forward(self, speed):
         current_angle = self.dir_current_angle
-        if current_angle != 0:
-            abs_current_angle = abs(current_angle)
-            if abs_current_angle > self.DIR_MAX:
-                abs_current_angle = self.DIR_MAX
-            power_scale = (100 - abs_current_angle) / 100.0
-            if (current_angle / abs_current_angle) > 0:
-                self.set_motor_speed(1, 1*speed * power_scale)
-                self.set_motor_speed(2, -speed) 
-            else:
-                self.set_motor_speed(1, speed)
-                self.set_motor_speed(2, -1*speed * power_scale)
-        else:
+    if current_angle != 0:
+        # Calculate the speed scaling factor based on the sine of the steering angle
+        power_scale = math.sin(math.radians(abs(current_angle)))
+        if current_angle > 0:
+            # Turning right, slow down the right wheel
             self.set_motor_speed(1, speed)
-            self.set_motor_speed(2, -1*speed)                  
+            self.set_motor_speed(2, -1*speed * power_scale)
+        else:
+            # Turning left, slow down the left wheel
+            self.set_motor_speed(1, speed * power_scale)
+            self.set_motor_speed(2, -1*speed)
+    else:
+        self.set_motor_speed(1, speed)
+        self.set_motor_speed(2, -1*speed)
+
+    def backward(self, speed):
+        current_angle = self.dir_current_angle
+        if current_angle != 0:
+            # Calculate the speed scaling factor based on the sine of the steering angle
+            power_scale = math.sin(math.radians(abs(current_angle)))
+            if current_angle > 0:
+                # Turning right, slow down the right wheel
+                self.set_motor_speed(1, -1*speed)
+                self.set_motor_speed(2, speed * power_scale)
+            else:
+                # Turning left, slow down the left wheel
+                self.set_motor_speed(1, -1*speed * power_scale)
+                self.set_motor_speed(2, speed)
+        else:
+            self.set_motor_speed(1, -1*speed)
+            self.set_motor_speed(2, speed)
 
     def stop(self):
         '''
