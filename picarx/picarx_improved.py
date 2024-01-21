@@ -52,8 +52,8 @@ class Picarx(object):
                 ):
 
         # reset robot_hat
-        utils.reset_mcu()
-        time.sleep(0.2)
+        # utils.reset_mcu()
+        # time.sleep(0.2)
 
         # --------- config_flie ---------
         self.config_flie = fileDB(config, 777, os.getlogin())
