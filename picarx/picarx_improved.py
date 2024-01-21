@@ -1,6 +1,7 @@
 import time
 import os
 import math
+
 try:
     from robot_hat import Pin, ADC, PWM, Servo, fileDB
     from robot_hat import Grayscale_Module, Ultrasonic
@@ -14,12 +15,7 @@ logging_format = "%(asctime)s: %(message)s"
 logging.basicConfig(format=logging_format, level=logging.INFO, datefmt="%H:%M:%S")
 logging.getLogger().setLevel(logging.DEBUG)
 
-
-
-
 import atexit
-
-
 reset_mcu()
 time.sleep(0.2)
 
