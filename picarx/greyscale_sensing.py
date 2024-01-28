@@ -39,6 +39,18 @@ class Interpreter():
         else:
             return [0 if (reading - avg) > self.sensitivity else 1 for reading in readings]
             
+    def map_readings_to_value(readings):
+        if readings == [0, 1, 0]:
+            return 0
+        elif readings == [0, 1, 1]:
+            return 0.5
+        elif readings == [0, 0, 1]:
+            return 1
+        elif readings == [1, 1, 0]:
+            return -0.5
+        elif readings == [1, 0, 0]:
+            return -1
+
 
 
 
@@ -50,5 +62,6 @@ if __name__ == "__main__":
     while True:
         print(sensor.read())
         print(interpreter.interpret(sensor.read()))
+        print(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
         time.sleep(0.001)  # Wait for 0.1 seconds
         
