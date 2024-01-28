@@ -34,7 +34,11 @@ class Interpreter():
     def interpret(self, readings):
         # Assume readings is a list of three values
         avg = sum(readings) / len(readings)
-        return [1 if self.polarity * (reading - avg) > self.sensitivity else 0 for reading in readings]
+        if self.polarity == 1:
+            return [1 if (reading - avg) > self.sensitivity else 0 for reading in readings]
+        else:
+            return [0 if (reading - avg) > self.sensitivity else 1 for reading in readings]
+            
 
 
 
