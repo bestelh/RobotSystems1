@@ -45,7 +45,7 @@ class Interpreter():
 
 if __name__ == "__main__":
     sensor = Sensing()
-    interpreter = Interpreter(sensitivity=0.7, polarity=-1) #light line (1) , dark line (-1)
+    interpreter = Interpreter(sensitivity=0.7, polarity=-1) #light line (-1) , dark line (1)
     #controller = Controller()
     while True:
         print(sensor.read())
