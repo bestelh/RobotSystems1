@@ -63,5 +63,5 @@ if __name__ == "__main__":
         print(sensor.read())
         print(interpreter.interpret(sensor.read()))
         print(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
-        time.sleep(0.001)  # Wait for 0.1 seconds
+        time.sleep(0.5)  # Wait for 0.1 seconds
         
