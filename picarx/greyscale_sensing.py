@@ -8,13 +8,7 @@ except ImportError:
 
 class Sensing():
 
-    def __init__(self, pin0, pin1, pin2):
-        
-        if isinstance(pin0,str):
-            self.chn_0 = ADC(pin0)
-            self.chn_1 = ADC(pin1)
-            self.chn_2 = ADC(pin2)
-        else:
+    def __init__(self):
             self.chn_0 = ADC('A0')
             self.chn_1 = ADC('A1')
             self.chn_2 = ADC('A2')
