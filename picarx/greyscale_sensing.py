@@ -24,8 +24,8 @@ class Sensing():
         return self.get_grayscale_data()
 
 if __name__ == "__main__":
-    sensor = Sensing()
+    sensor1 = Sensing()
     while True:
-        print(sensor.read())
+        print(sensor1.read())
         time.sleep(0.1)  # Wait for 0.1 seconds
         
