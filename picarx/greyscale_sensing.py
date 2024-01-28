@@ -21,13 +21,30 @@ class Sensing():
         adc_value_list.append(self.chn_1.read())
         adc_value_list.append(self.chn_2.read())
         return adc_value_list
-    
+      
     def read(self):
         return self.get_grayscale_data()
 
+class Interpreter():
+     
+    def __init__(self,sensitivity=0.7, polarity=-1):
+        self.sensitivity = sensitivity
+        self.polarity = polarity
+    
+    def interpret(self, readings):
+        # Assume readings is a list of three values
+        avg = sum(readings) / len(readings)
+        return [1 if self.polarity * (reading - avg) > self.sensitivity else 0 for reading in readings]
+
+
+
+
 if __name__ == "__main__":
-    sensor1 = Sensing()
+    sensor = Sensing()
+    interpreter = Interpreter(sensitivity=0.7, polarity=-1) #light line (1) , dark line (-1)
+    #controller = Controller()
     while True:
-        print(sensor1.read())
+        print(sensor.read())
+        print(interpreter.interpret(sensor.read()))
         time.sleep(0.1)  # Wait for 0.1 seconds
         
