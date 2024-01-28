@@ -51,6 +51,27 @@ class Interpreter():
         elif readings == [1, 0, 0]:
             return -1
 
+class Controller():
+    def __init__(self,scaling=1.0):
+        self.scaling = scaling
+
+    def control(self, value):
+        # Assume value is a float between -1 and 1
+        if value == 0:
+            px.set_dir_servo_angle(0)
+            
+        elif value == 0.5: 
+            px.set_dir_servo_angle(-15*self.scaling)
+            
+        elif value == 1:
+            px.set_dir_servo_angle(-30*self.scaling)
+
+        elif value == -0.5:
+            px.set_dir_servo_angle(15*self.scaling)
+
+        elif value == -1:
+            px.set_dir_servo_angle(30*self.scaling)
+
 
 
 
@@ -60,6 +81,8 @@ if __name__ == "__main__":
     interpreter = Interpreter(sensitivity=0.7, polarity=-1) #light line (-1) , dark line (1)
     #controller = Controller()
     while True:
+        controller=Controller(scaling=1.0)
+        controller.control(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
         print(sensor.read())
         print(interpreter.interpret(sensor.read()))
         print(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
