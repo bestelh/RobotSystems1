@@ -16,6 +16,10 @@ class Sensing():
         return self.pin1, self.pin2, self.pin3
 
 if __name__ == "__main__":
-    sensor=Sensing()
-    print(sensor.read_pins())
-    time.sleep(0.01)
+    sensor = Sensing()
+    while True:
+        print(sensor.read_pins())
+        time.sleep(0.1)  # Wait for 0.1 seconds
+        command = input("Enter command: ")
+        if command.upper() == 'EXIT':
+            break
