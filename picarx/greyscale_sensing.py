@@ -6,6 +6,8 @@ try:
 except ImportError:
     from sim_robot_hat import ADC
 
+px = Picarx()
+
 class Sensing():
 
     def __init__(self):
