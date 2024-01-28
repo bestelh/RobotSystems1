@@ -61,30 +61,28 @@ class Controller():
             px.set_dir_servo_angle(0)
             
         elif value == 0.5: 
-            px.set_dir_servo_angle(-15*self.scaling)
+            px.set_dir_servo_angle(15*self.scaling)
             
         elif value == 1:
-            px.set_dir_servo_angle(-30*self.scaling)
-
-        elif value == -0.5:
-            px.set_dir_servo_angle(15*self.scaling)
-
-        elif value == -1:
             px.set_dir_servo_angle(30*self.scaling)
 
+        elif value == -0.5:
+            px.set_dir_servo_angle(-15*self.scaling)
 
-
+        elif value == -1:
+            px.set_dir_servo_angle(-30*self.scaling)
 
 
 if __name__ == "__main__":
     sensor = Sensing()
-    interpreter = Interpreter(sensitivity=0.7, polarity=-1) #light line (-1) , dark line (1)
+    interpreter = Interpreter(sensitivity=0.95, polarity=-1) #light line (-1) , dark line (1)
     #controller = Controller()
     while True:
-        controller=Controller(scaling=1.0)
+        px.forward(50)
+        controller=Controller(scaling=1.9)
         controller.control(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
         print(sensor.read())
         print(interpreter.interpret(sensor.read()))
         print(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
-        time.sleep(0.5)  # Wait for 0.1 seconds
+        time.sleep(0.1)  # Wait for 0.1 seconds
         
