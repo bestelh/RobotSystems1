@@ -28,6 +28,4 @@ if __name__ == "__main__":
     while True:
         print(sensor.read())
         time.sleep(0.1)  # Wait for 0.1 seconds
-        command = input("Enter command: ")
-        if command.upper() == 'EXIT':
-            break
+        
