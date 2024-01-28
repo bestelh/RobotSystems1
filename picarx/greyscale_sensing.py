@@ -46,5 +46,5 @@ if __name__ == "__main__":
     while True:
         print(sensor.read())
         print(interpreter.interpret(sensor.read()))
-        time.sleep(0.1)  # Wait for 0.1 seconds
+        time.sleep(0.001)  # Wait for 0.1 seconds
         
