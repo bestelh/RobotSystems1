@@ -1,5 +1,6 @@
 import time
 from picarx_improved import Picarx
+import atexit
 
 try:
     from robot_hat import ADC   
@@ -75,14 +76,15 @@ class Controller():
 
 if __name__ == "__main__":
     sensor = Sensing()
-    interpreter = Interpreter(sensitivity=0.95, polarity=-1) #light line (-1) , dark line (1)
+    interpreter = Interpreter(sensitivity=0.5, polarity=-1) #light line (-1) , dark line (1)
     #controller = Controller()
     while True:
-        px.forward(50)
-        controller=Controller(scaling=1.9)
+        atexit.register(px.stopping_motors)
+        px.forward(40)
+        controller=Controller(scaling=1)
         controller.control(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
         print(sensor.read())
         print(interpreter.interpret(sensor.read()))
         print(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
-        time.sleep(0.1)  # Wait for 0.1 seconds
+        time.sleep(0.05)  # Wait for 0.1 seconds
         
