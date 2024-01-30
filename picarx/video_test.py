@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from picarx_improved import Picarx
+import time
 
 def process_image(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -50,7 +51,8 @@ def main():
  
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
- 
+        time.sleep(0.1)
+        
     cap.release()
     cv2.destroyAllWindows()
  
