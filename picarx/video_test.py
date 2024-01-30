@@ -4,7 +4,6 @@ from picarx_improved import Picarx
 import time
 
 def process_image(image):
-    # Only process the bottom middle sixth of the image
     height, width = image.shape[:2]
     roi = image[height*5//6:, width*2//6:width*4//6]
     
@@ -14,21 +13,27 @@ def process_image(image):
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
  
     if contours:
-        largest_contour = max(contours, key=cv2.contourArea)
-        M = cv2.moments(largest_contour)
-        if M["m00"] != 0:
-            cX = int(M["m10"] / M["m00"])
-            cY = int(M["m01"] / M["m00"])
-        else:
-            cX, cY = 0, 0
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:2]
+        centers = []
+        for contour in contours:
+            M = cv2.moments(contour)
+            if M["m00"] != 0:
+                cX = int(M["m10"] / M["m00"])
+                cY = int(M["m01"] / M["m00"])
+                centers.append((cX, cY))
         
-        # Draw a red circle on the image at the center of the largest contour
-        cv2.circle(image, (cX + width*2//6, cY + height*5//6), 5, (0, 0, 255), -1)
-        # Draw a line from the bottom middle of the screen to the center of the circle
-        cv2.line(image, (width // 2, height), (cX + width*2//6, cY + height*5//6), (0, 0, 255), 2)
-        return (cX + width*2//6, cY + height*5//6), image
+        if len(centers) == 2:
+            middle_point = ((centers[0][0] + centers[1][0]) // 2, (centers[0][1] + centers[1][1]) // 2)
+            
+            # Create a separate color image for drawing
+            drawing_image = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+            # Draw a red circle at the middle point
+            cv2.circle(drawing_image, (middle_point[0], middle_point[1]), 5, (0, 0, 255), -1)
+            # Draw a line from the bottom middle of the screen to the middle point
+            cv2.line(drawing_image, (width // 2, height), (middle_point[0], middle_point[1]), (0, 0, 255), 2)
+            return (middle_point[0] + width*2//6, middle_point[1] + height*5//6), drawing_image
     
-    return None, image
+    return None, cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
 
 def control_robot(center, image_width):
     if center is not None:
