@@ -22,7 +22,13 @@ def process_image(image):
 def control_robot(line_center, image_width):
     if line_center is not None:
         deviation = line_center - image_width // 2
-        #print(f"Deviation: {deviation}")
+        # Calculate the deviation as a proportion of the image width
+        deviation_proportion = deviation / image_width
+        # Convert the deviation proportion to a turning angle
+        # The maximum turning angle is assumed to be 45 degrees
+        turning_angle = deviation_proportion * 30
+        return turning_angle
+    return None
  
 def main():
     px = Picarx()
@@ -32,9 +38,14 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     px.set_cam_tilt_angle(-45)
     while True:
+        px.forward(40)
         ret, frame = cap.read()
         line_center = process_image(frame)
-        control_robot(line_center, frame.shape[1])
+        turning_angle = control_robot(line_center, frame.shape[1])
+        if turning_angle is not None:
+            # Use the turning angle to control the robot
+            # The control function is assumed to take a turning angle in degrees
+            px.set_dir_servo_angle(turning_angle)
         cv2.imshow('Line Following', frame)
  
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -45,4 +56,3 @@ def main():
  
 if __name__ == "__main__":
     main()
-    
