@@ -44,7 +44,7 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     px.set_cam_tilt_angle(-45)
     while True:
-        #px.forward(40)
+        px.forward(40)
         ret, frame = cap.read()
         line_center, processed_image = process_image(frame)
         turning_angle = control_robot(line_center, frame.shape[1])
