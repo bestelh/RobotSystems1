@@ -4,9 +4,6 @@ from picarx_improved import Picarx
 import time
 
 def process_image(image):
-    height, width = image.shape[:2]
-    roi = image[height*5//6:, width*2//6:width*4//6]
-    
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 50, 150)
