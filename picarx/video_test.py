@@ -4,7 +4,11 @@ from picarx_improved import Picarx
 import time
 
 def process_image(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Only process the bottom middle sixth of the image
+    height, width = image.shape[:2]
+    roi = image[height*5//6:, width*2//6:width*4//6]
+    
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 50, 150)
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -18,11 +22,13 @@ def process_image(image):
         else:
             cX, cY = 0, 0
         
-        # Draw a circle on the image at the center of the largest contour
-        cv2.circle(gray, (cX, cY), 5, (255), -1)
-        return (cX, cY), gray
+        # Draw a red circle on the image at the center of the largest contour
+        cv2.circle(image, (cX + width*2//6, cY + height*5//6), 5, (0, 0, 255), -1)
+        # Draw a line from the bottom middle of the screen to the center of the circle
+        cv2.line(image, (width // 2, height), (cX + width*2//6, cY + height*5//6), (0, 0, 255), 2)
+        return (cX + width*2//6, cY + height*5//6), image
     
-    return None, gray
+    return None, image
 
 def control_robot(center, image_width):
     if center is not None:
