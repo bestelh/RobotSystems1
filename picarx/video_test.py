@@ -4,6 +4,9 @@ from picarx_improved import Picarx
 import time
 
 def process_image(image):
+    height, width = image.shape[:2]
+    roi = image[height*5//6:, width*2//6:width*4//6]
+    
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 50, 150)
@@ -22,15 +25,23 @@ def process_image(image):
         if len(centers) == 2:
             middle_point = ((centers[0][0] + centers[1][0]) // 2, (centers[0][1] + centers[1][1]) // 2)
             
-            # Create a separate color image for drawing
-            drawing_image = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
-            # Draw a red circle at the middle point
-            cv2.circle(drawing_image, (middle_point[0], middle_point[1]), 5, (0, 0, 255), -1)
-            # Draw a line from the bottom middle of the screen to the middle point
-            cv2.line(drawing_image, (width // 2, height), (middle_point[0], middle_point[1]), (0, 0, 255), 2)
-            return (middle_point[0] + width*2//6, middle_point[1] + height*5//6), drawing_image
+            # Draw a circle at the middle point
+            cv2.circle(gray, (middle_point[0], middle_point[1]), 5, (255), -1)
+            return (middle_point[0] + width*2//6, middle_point[1] + height*5//6), gray
     
-    return None, cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+    return None, gray
+
+def control_robot(center, image_width):
+    if center is not None:
+        cX, cY = center
+        deviation = cX - image_width // 2
+        # Calculate the deviation as a proportion of the image width
+        deviation_proportion = deviation / image_width
+        # Convert the deviation proportion to a turning angle
+        # The maximum turning angle is assumed to be 45 degrees
+        turning_angle = deviation_proportion * 30
+        return turning_angle
+    return None
 
 def control_robot(center, image_width):
     if center is not None:
