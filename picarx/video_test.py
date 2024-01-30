@@ -15,10 +15,10 @@ def process_image(image):
         line_center = x + w // 2
         
         # Draw a line on the image at the line center
-        cv2.line(image, (line_center, 0), (line_center, image.shape[0]), (0, 255, 0), 2)
-        return line_center
+        cv2.line(gray, (line_center, 0), (line_center, gray.shape[0]), (255), 2)
+        return line_center, gray
     
-    return None
+    return None, gray
  
 def control_robot(line_center, image_width):
     if line_center is not None:
@@ -41,18 +41,17 @@ def main():
     while True:
         #px.forward(40)
         ret, frame = cap.read()
-        line_center = process_image(frame)
+        line_center, processed_image = process_image(frame)
         turning_angle = control_robot(line_center, frame.shape[1])
         if turning_angle is not None:
             # Use the turning angle to control the robot
             # The control function is assumed to take a turning angle in degrees
             px.set_dir_servo_angle(turning_angle)
-        cv2.imshow('Line Following', frame)
+        cv2.imshow('Line Following', processed_image)
  
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-        time.sleep(0.1)
-        
+ 
     cap.release()
     cv2.destroyAllWindows()
  
