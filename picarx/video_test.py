@@ -3,19 +3,24 @@ import numpy as np
 from picarx_improved import Picarx
 import time
 
+import numpy as np
+
+last_center = None
+
 def process_image(image):
+    global last_center
     height, width = image.shape[:2]
-    roi = image[height//2:, :]  # Use data from the bottom half of the screen
+    roi = image[:]  # Use data from the center and bottom of the screen
 
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    blurred = cv2.GaussianBlur(gray, (9, 9), 0)
     edges = cv2.Canny(blurred, 50, 150)
 
     # Find contours in the edges
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Draw all contours
-    cv2.drawContours(roi, contours, -1, (0, 0, 255), 1)
+    cv2.drawContours(roi, contours, -1, (0, 255, 0), 1)
 
     # Find the contour closest to the middle of the image
     middle = width // 2
@@ -35,15 +40,21 @@ def process_image(image):
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
         center = (cX, cY)
-        # Draw a circle at the center of the middle contour in green
-        cv2.circle(roi, center, 5, (0, 255, 0), -1)
+        last_center = center  # Update the last detected center
+    else:
+        center = last_center  # Use the last detected center if no contour is found
+
+    if center is not None:
+        # Draw a circle at the center
+        cv2.circle(roi, center, 5, (255, 0, 0), -1)
         return (center[0], center[1] + height//2), roi  # Adjust the y-coordinate of the center
 
     return None, roi
 
 def control_robot(center, image_width):
+    
     if center is not None:
-        cX, cY = center
+        cX, cy = center
         deviation = cX - image_width // 2
         # Calculate the deviation as a proportion of the image width
         deviation_proportion = deviation / image_width
@@ -61,7 +72,7 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     px.set_cam_tilt_angle(-45)
-    sample_rate = 0.01  # Set the desired sample rate here
+    sample_rate = 0.1  # Set the desired sample rate here
     while True:
         ret, frame = cap.read()
         line_center, processed_image = process_image(frame)
