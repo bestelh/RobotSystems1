@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
- 
+from picarx_improved import Picarx
+
 def process_image(image):
+    px = Picarx()
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 50, 150)
@@ -25,7 +27,7 @@ def main():
     # Set desired frame width and height
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
- 
+    px.set_cam_tilt_angle(int(input("Enter angle: ")))
     while True:
         ret, frame = cap.read()
         line_center = process_image(frame)
@@ -40,3 +42,4 @@ def main():
  
 if __name__ == "__main__":
     main()
+    
