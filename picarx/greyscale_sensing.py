@@ -80,10 +80,10 @@ if __name__ == "__main__":
     #controller = Controller()
     while True:
         px.forward(50)
-        controller=Controller(scaling=1.9)
+        controller=Controller(scaling=1)
         controller.control(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
         print(sensor.read())
         print(interpreter.interpret(sensor.read()))
         print(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
-        time.sleep(0.1)  # Wait for 0.1 seconds
+        time.sleep(0.05)  # Wait for 0.1 seconds
         
