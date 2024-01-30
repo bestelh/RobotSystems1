@@ -11,18 +11,23 @@ def process_image(image):
  
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
-        x, y, w, h = cv2.boundingRect(largest_contour)
-        line_center = x + w // 2
+        M = cv2.moments(largest_contour)
+        if M["m00"] != 0:
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
+        else:
+            cX, cY = 0, 0
         
-        # Draw a line on the image at the line center
-        cv2.line(gray, (line_center, 0), (line_center, gray.shape[0]), (255), 2)
-        return line_center, gray
+        # Draw a circle on the image at the center of the largest contour
+        cv2.circle(gray, (cX, cY), 5, (255), -1)
+        return (cX, cY), gray
     
     return None, gray
- 
-def control_robot(line_center, image_width):
-    if line_center is not None:
-        deviation = line_center - image_width // 2
+
+def control_robot(center, image_width):
+    if center is not None:
+        cX, cY = center
+        deviation = cX - image_width // 2
         # Calculate the deviation as a proportion of the image width
         deviation_proportion = deviation / image_width
         # Convert the deviation proportion to a turning angle
