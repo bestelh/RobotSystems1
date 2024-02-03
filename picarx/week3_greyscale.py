@@ -33,7 +33,7 @@ class Interpreter():
         self.polarity = polarity
     
     def interpret(self, readings):
-        # Assume readings is a list of three values
+       
         avg = sum(readings) / len(readings)
         if self.polarity == 1:
             return [1 if (reading - avg) > self.sensitivity else 0 for reading in readings]
@@ -57,7 +57,7 @@ class Controller():
         self.scaling = scaling
 
     def control(self, value):
-        # Assume value is a float between -1 and 1
+
         if value == 0:
             px.set_dir_servo_angle(0)
             
@@ -77,7 +77,6 @@ class Controller():
 if __name__ == "__main__":
     sensor = Sensing()
     interpreter = Interpreter(sensitivity=0.95, polarity=1) #light line (-1) , dark line (1)
-    #controller = Controller()
     while True:
         px.forward(35)
         controller=Controller(scaling=1)
@@ -85,5 +84,4 @@ if __name__ == "__main__":
         print(sensor.read())
         print(interpreter.interpret(sensor.read()))
         print(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())))
-        time.sleep(0.005)  # Wait for 0.1 seconds
-        
+        time.sleep(0.005) 
