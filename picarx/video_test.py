@@ -10,19 +10,15 @@ last_center = None
 def process_image(image):
     global last_center
     height, width = image.shape[:2]
-    roi = image[:]  # Use data from the center and bottom of the screen
+    roi = image[:]  
 
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (9, 9), 0)
     edges = cv2.Canny(blurred, 50, 150)
 
-    # Find contours in the edges
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Draw all contours
     cv2.drawContours(roi, contours, -1, (0, 255, 0), 1)
 
-    # Find the contour closest to the middle of the image
     middle = width // 2
     min_distance = float('inf')
     middle_contour = None
@@ -40,14 +36,13 @@ def process_image(image):
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
         center = (cX, cY)
-        last_center = center  # Update the last detected center
+        last_center = center  
     else:
-        center = last_center  # Use the last detected center if no contour is found
+        center = last_center
 
     if center is not None:
-        # Draw a circle at the center
         cv2.circle(roi, center, 5, (255, 0, 0), -1)
-        return (center[0], center[1] + height//2), roi  # Adjust the y-coordinate of the center
+        return (center[0], center[1] + height//2), roi  
 
     return None, roi
 
@@ -56,16 +51,16 @@ def control_robot(center, image_width):
     if center is not None:
         cX, cy = center
         deviation = cX - image_width // 2
-        # Calculate the deviation as a proportion of the image width
         deviation_proportion = deviation / image_width
-        # Convert the deviation proportion to a turning angle
-        # The maximum turning angle is assumed to be 45 degrees
+        
         turning_angle = deviation_proportion * 20
         print(turning_angle)
         return turning_angle
     return None
  
-def main():
+
+
+if __name__ == "__main__":
     px = Picarx()
     cap = cv2.VideoCapture(0)
     # Set desired frame width and height
@@ -91,6 +86,4 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
-if __name__ == "__main__":
-    main()
     
