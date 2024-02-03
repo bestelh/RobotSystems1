@@ -1,6 +1,8 @@
 import time
 from picarx_improved import Picarx
 import atexit
+import concurrent.futures
+from readerwriterlock import rwlock
 
 try:
     from robot_hat import ADC   
@@ -12,11 +14,15 @@ px = Picarx()
 class Bus:
     def __init__(self):
         self.message = None
+        self.lock = rwlock.RWLockWriteD()
 
     def write(self, message):
-        self.message = message
+        with self.lock.gen_wlock():
+            self.message = message
 
-    def read(self):
+    def read(self, message):
+        with self.lock.gen_rlock():
+            message = self.message
         return self.message
 
 class Sensing():
@@ -92,6 +98,8 @@ if __name__ == "__main__":
     interpreter = Interpreter(sensitivity=0.95, polarity=1)
     controller = Controller(scaling=1)
     delay=0.01
-    sensing.sensor(bus_sensor, delay)
-    interpreter.interpreter(bus_sensor, bus_control, delay)
-    controller.controller(bus_control, delay)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+        eSensor = executor.submit(sensing.sensor, bus_sensor, delay)
+        eInterpreter = executor.submit(interpreter.interpreter, bus_sensor, bus_control, delay)
+        eController = executor.submit(controller.controller, bus_control, delay)
+eSensor.result()
