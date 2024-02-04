@@ -79,6 +79,7 @@ class Controller():
         self.scaling = scaling
 
     def control(self, value):
+        print(f"Controller is processing value: {value}")
         if value == 0:
             px.set_dir_servo_angle(0)
         elif value == 1:
