@@ -9,7 +9,7 @@ try:
 except ImportError:
     from sim_robot_hat import ADC
 
-px = Picarx()
+
 
 class Bus:
     def __init__(self):
@@ -23,7 +23,8 @@ class Bus:
     def read(self):
         with self.lock.gen_rlock():
             message = self.message
-            return  message
+            self.message = None  # Clear the message after it's been read
+            return message
 
 class Sensing():
     def __init__(self):
@@ -44,8 +45,11 @@ class Sensing():
 
     def sensor(self, bus, delay):
         while True:
-            bus.write(self.get_grayscale_data())
-            time.sleep(delay)
+            try:
+                bus.write(self.get_grayscale_data())
+                time.sleep(delay)
+            except Exception as e:
+                print(f"Exception in sensor thread: {e}")
 
 class Interpreter():
     def __init__(self,sensitivity=0.7, polarity=-1):
@@ -60,23 +64,24 @@ class Interpreter():
             return [0 if (reading - avg) > self.sensitivity else 1 for reading in readings]
 
     def map_readings_to_value(self,readings):
-        
+        print(f"Int is processing value: {readings}")
         if readings == [0, 1, 0]:
             return 0
-        elif readings == [0, 1, 1]:
-            return 0.5
+        # elif readings == [0, 1, 1]:
+        #     return 0.5
         elif readings == [0, 0, 1]:
             return 1
-        elif readings == [1, 1, 0]:
-            return -0.5
+        # elif readings == [1, 1, 0]:
+        #     return -0.5
         elif readings == [1, 0, 0]:
             return -1
 
     def interpreter(self, bus_sensor, bus_control, delay):
         while True:
             readings = bus_sensor.read()
-            interpreted = self.map_readings_to_value(self.interpret(readings))
-            bus_control.write(interpreted)
+            if readings is not None:  # Only process the readings if they're not None
+                interpreted = self.map_readings_to_value(self.interpret(readings))
+                bus_control.write(interpreted)
             time.sleep(delay)
 
 class Controller():
@@ -94,14 +99,17 @@ class Controller():
 
     def controller(self, bus, delay):
         while True:
-            self.control(bus.read())
+            value = bus.read()
+            if value is not None:  # Only process the value if it's not None
+                self.control(value)
             time.sleep(delay)
 
 if __name__ == "__main__":
+    px = Picarx()
     bus_sensor = Bus()
     bus_control = Bus()
     sensing = Sensing()
-    interpreter = Interpreter(sensitivity=0.95, polarity=1)
+    interpreter = Interpreter(sensitivity=0.95, polarity=-1)
     controller = Controller(scaling=1)
     delay=0.1
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
@@ -109,3 +117,5 @@ if __name__ == "__main__":
         eInterpreter = executor.submit(interpreter.interpreter, bus_sensor, bus_control, delay)
         eController = executor.submit(controller.controller, bus_control, delay)
 eSensor.result()
+eInterpreter.result()
+eController.result()
