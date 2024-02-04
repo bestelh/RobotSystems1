@@ -23,7 +23,7 @@ class Bus:
     def read(self):
         with self.lock.gen_rlock():
             message = self.message
-        
+            return  message
 
 class Sensing():
     def __init__(self):
@@ -33,9 +33,13 @@ class Sensing():
 
     def get_grayscale_data(self):
         adc_value_list = []
-        adc_value_list.append(self.chn_0.read())
-        adc_value_list.append(self.chn_1.read())
-        adc_value_list.append(self.chn_2.read())
+        adc_value_0 = self.chn_0.read()
+        adc_value_1 = self.chn_1.read()
+        adc_value_2 = self.chn_2.read()
+        print(f"ADC values: {adc_value_0}, {adc_value_1}, {adc_value_2}")
+        adc_value_list.append(adc_value_0)
+        adc_value_list.append(adc_value_1)
+        adc_value_list.append(adc_value_2)
         return adc_value_list
 
     def sensor(self, bus, delay):
@@ -99,7 +103,7 @@ if __name__ == "__main__":
     sensing = Sensing()
     interpreter = Interpreter(sensitivity=0.95, polarity=1)
     controller = Controller(scaling=1)
-    delay=0.01
+    delay=0.1
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         eSensor = executor.submit(sensing.sensor, bus_sensor, delay)
         eInterpreter = executor.submit(interpreter.interpreter, bus_sensor, bus_control, delay)
