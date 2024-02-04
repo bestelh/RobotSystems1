@@ -20,10 +20,9 @@ class Bus:
         with self.lock.gen_wlock():
             self.message = message
 
-    def read(self, message):
+    def read(self):
         with self.lock.gen_rlock():
-            message = self.message
-        return self.message
+           return self.message
 
 class Sensing():
     def __init__(self):
