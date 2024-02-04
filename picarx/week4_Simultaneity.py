@@ -106,6 +106,7 @@ class Controller():
 
 if __name__ == "__main__":
     px = Picarx()
+    #px.forward(35)
     bus_sensor = Bus()
     bus_control = Bus()
     sensing = Sensing()
