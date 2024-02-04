@@ -23,7 +23,7 @@ class Bus:
     def read(self):
         with self.lock.gen_rlock():
             message = self.message
-        return message
+        
 
 class Sensing():
     def __init__(self):
@@ -56,6 +56,7 @@ class Interpreter():
             return [0 if (reading - avg) > self.sensitivity else 1 for reading in readings]
 
     def map_readings_to_value(self,readings):
+        
         if readings == [0, 1, 0]:
             return 0
         elif readings == [0, 1, 1]:
