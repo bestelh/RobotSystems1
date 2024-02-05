@@ -73,7 +73,7 @@ def read_data_loop():
 
     while run_flag:
         try:
-            current_grayscale_value = px.get_gr0ayscale_data()
+            current_grayscale_value = px.get_grayscale_data()
 
             # calculate the reference
             if cali_status == 'work':
