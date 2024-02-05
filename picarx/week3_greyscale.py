@@ -76,7 +76,7 @@ class Controller():
 
 if __name__ == "__main__":
     sensor = Sensing()
-    interpreter = Interpreter(sensitivity=0.95, polarity=1) #light line (-1) , dark line (1)
+    interpreter = Interpreter(sensitivity=0.95, polarity=-1) #light line (-1) , dark line (1)
     try:
         while True:
             px.forward(35)
