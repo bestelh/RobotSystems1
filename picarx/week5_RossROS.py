@@ -107,7 +107,7 @@ bTerminate = rr.Bus(0, "Termination Bus")
 readPins = rr.Producer(
     sensor.get_grayscale_data,  # function that will generate data
     bSensing,  # output data bus
-    0.05,  # delay between data generation cycles
+    0.001,  # delay between data generation cycles
     bTerminate,  # bus to watch for termination signal
     "Read pin data from greyscale module")
 
@@ -116,7 +116,7 @@ interpretData = rr.ConsumerProducer(
     interpreter.map_readings_to_value,  # function that will process data
     bSensing,  # input data buses
     bInterpreter,  # output data bus
-    0.05,  # delay between data control cycles
+    0.01,  # delay between data control cycles
     bTerminate,  # bus to watch for termination signal
     "Multiply Waves")
 
@@ -124,7 +124,7 @@ interpretData = rr.ConsumerProducer(
 controlServo = rr.Consumer(
     controller.control,  # function that will process data
     bInterpreter,  # input data buses
-    0.05,  # delay between data control cycles
+    0.1,  # delay between data control cycles
     bTerminate,  # bus to watch for termination signal
     "Multiply Waves")
 
