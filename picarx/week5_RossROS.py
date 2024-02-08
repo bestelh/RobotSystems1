@@ -48,30 +48,31 @@ class Interpreter():
         self.sensitivity = sensitivity
         self.polarity = polarity
     
-    def interpret(self, readings):
-       
+    def process_sensor_data(self, readings):
+        # Interpret the readings
         avg = sum(readings) / len(readings)
         if self.polarity == 1:
-            return [1 if (reading - avg) > self.sensitivity else 0 for reading in readings]
+            interpreted_readings = [1 if (reading - avg) > self.sensitivity else 0 for reading in readings]
         else:
-            return [0 if (reading - avg) > self.sensitivity else 1 for reading in readings]
-            
-    def map_readings_to_value(self,readings):
-        #print(f"Int is processing value: {readings}")
-        if readings == [0, 1, 0]:
+            interpreted_readings = [0 if (reading - avg) > self.sensitivity else 1 for reading in readings]
+
+        # Map the interpreted readings to a value
+        if interpreted_readings == [0, 1, 0]:
             return 0
-        elif readings == [0, 1, 1]:
+        elif interpreted_readings == [0, 1, 1]:
             return 0.5
-        elif readings == [0, 0, 1]:
+        elif interpreted_readings == [0, 0, 1]:
             return 1
-        elif readings == [1, 1, 0]:
+        elif interpreted_readings == [1, 1, 0]:
             return -0.5
-        elif readings == [1, 0, 0]:
+        elif interpreted_readings == [1, 0, 0]:
             return -1
-        elif readings == [1, 1, 1]:
+        elif interpreted_readings == [1, 1, 1]:
             return 0
-        elif readings == [0, 0, 0]:
+        elif interpreted_readings == [0, 0, 0]:
             return 0
+        else:
+            return None  # Return None if the interpreted readings do not match any known pattern
 
 class Controller():
     def __init__(self,scaling=1.0):
@@ -97,8 +98,8 @@ controller=Controller(scaling=1)
 
 # Initiate data and termination busses
 bSensing = rr.Bus(sensor.read(), "Sensing bus")
-bInterpreter = rr.Bus(interpreter.map_readings_to_value(interpreter.interpret(sensor.read())), "Interpreter Bus")
-bController = rr.Bus(controller.control(interpreter.map_readings_to_value(interpreter.interpret(sensor.read()))), "Controller bus")
+bInterpreter = rr.Bus(interpreter.process_sensor_data(sensor.read()), "Interpreter Bus")
+bController = rr.Bus(controller.control(interpreter.process_sensor_data(sensor.read())), "Controller bus")
 bTerminate = rr.Bus(0, "Termination Bus")
 
 """ Third Part: Wrap functions into RossROS objects """
@@ -113,7 +114,7 @@ readPins = rr.Producer(
 
 # Wrap the multiplier function into a consumer-producer
 interpretData = rr.ConsumerProducer(
-    interpreter.map_readings_to_value,  # function that will process data
+    interpreter.process_sensor_data,  # function that will process data
     bSensing,  # input data buses
     bInterpreter,  # output data bus
     0.01,  # delay between data control cycles
