@@ -125,9 +125,9 @@ if __name__ == "__main__":
     interpreter = Interpreter(sensitivity=0.99, polarity=-1)
     controller = Controller(scaling=1)
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-        eSensor = executor.submit(sensing.sensor, bus_sensor, 0.001)
-        eInterpreter = executor.submit(interpreter.interpreter, bus_sensor, bus_control, 0.01)
-        eController = executor.submit(controller.controller, bus_control, 0.1 )
+        eSensor = executor.submit(sensing.sensor, bus_sensor, 0.002)
+        eInterpreter = executor.submit(interpreter.interpreter, bus_sensor, bus_control, 0.02)
+        eController = executor.submit(controller.controller, bus_control, 0.2 )
 eSensor.result()
 eInterpreter.result()
 eController.result()
