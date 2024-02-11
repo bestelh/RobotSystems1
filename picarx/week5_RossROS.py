@@ -7,10 +7,10 @@ from picarx_improved import Picarx
 from readerwriterlock import rwlock
 
 try:
-    from robot_hat import ADC
+    from robot_hat import ADC, Pin
     from robot_hat.utils import reset_mcu, run_command
 except ImportError:
-    from sim_robot_hat import ADC
+    from sim_robot_hat import ADC, Pin
     from sim_robot_hat import reset_mcu, run_command
 
 # logging.getLogger().setLevel(logging.DEBUG)
@@ -134,7 +134,7 @@ class Ult_Control():
     def _init_(self):
         pass
 
-    def controller(self, threshold,speed):
+    def controller(self, threshold, speed=35):
         if threshold < 10:
             px.forward(0)
             px.stop
@@ -146,16 +146,25 @@ gray_sensor = Gray_Sensing()
 gray_interpreter = Gray_Interpreter(sensitivity=0.95, polarity=-1) #light line (-1) , dark line (1)
 gray_controller= Gray_Controller(scaling=1)
 
+ult_sensor = Ult_Sensing()
+ult_interpreter = Ult_Interpreting()
+ult_controller = Ult_Control()
+
 # Initiate data and termination busses
 bGray_Sensing = rr.Bus(gray_sensor.read(), "Sensing bus")
 bGray_Interpreter = rr.Bus(gray_interpreter.process_sensor_data(gray_sensor.read()), "Interpreter Bus")
 bGray_Controller = rr.Bus(gray_controller.control(gray_interpreter.process_sensor_data(gray_sensor.read())), "Controller bus")
+
+bUlt_Sensing = rr.Bus(ult_sensor.read(), "Sensing bus")
+bUlt_Interpreting = rr.Bus(ult_interpreter.interpret(ult_sensor.read()), "Interpreter Bus")
+bUlt_Controller = rr.Bus(ult_controller.controller(ult_interpreter.interpret(ult_sensor.read())), "Controller bus")
+
 bTerminate = rr.Bus(0, "Termination Bus")
 
 """ Third Part: Wrap functions into RossROS objects """
 
 # Wrap the sensing greyscale data into a producer
-readPins = rr.Producer(
+readPins_gray = rr.Producer(
     gray_sensor.get_grayscale_data,  # function that will generate data
     bGray_Sensing,  # output data bus
     0.05,  # delay between data generation cycles
@@ -163,7 +172,7 @@ readPins = rr.Producer(
     "Read pin data from greyscale module")
 
 # Wrap the multiplier function into a consumer-producer
-interpretData = rr.ConsumerProducer(
+interpretData_gray = rr.ConsumerProducer(
     gray_interpreter.process_sensor_data,  # function that will process data
     bGray_Sensing,  # input data buses
     bGray_Interpreter,  # output data bus
@@ -172,12 +181,36 @@ interpretData = rr.ConsumerProducer(
     "Interpret grayscale data")
 
 # Wrap the multiplier function into a consumer-producer
-controlServo = rr.Consumer(
+controlServo_gray = rr.Consumer(
     gray_controller.control,  # function that will process data
     bGray_Interpreter,  # input data buses
     1,  # delay between data control cycles
     bTerminate,  # bus to watch for termination signal
     "Move direction servo")
+
+readPins_ult = rr.Producer(
+    ult_sensor.get_ultrasonic_data,  # function that will generate data
+    bUlt_Sensing,  # output data bus
+    0.05,  # delay between data generation cycles
+    bTerminate,  # bus to watch for termination signal
+    "Read pin data from ultrasonic module")
+
+interpretData_ult = rr.ConsumerProducer(
+    ult_interpreter.interpret,  # function that will process data
+    bUlt_Sensing,  # input data buses
+    bUlt_Interpreting,  # output data bus
+    0.1,  # delay between data control cycles
+    bTerminate,  # bus to watch for termination signal
+    "Interpret ultrasonic data")
+
+controlServo_ult = rr.Consumer(
+    ult_controller.controller,  # function that will process data
+    bUlt_Interpreting,  # input data buses
+    1,  # delay between data control cycles
+    bTerminate,  # bus to watch for termination signal
+    "Move direction servo")
+
+
 
 """ Fourth Part: Create RossROS Printer and Timer objects """
 
@@ -202,9 +235,12 @@ terminationTimer = rr.Timer(
 """ Fifth Part: Concurrent execution """
 
 # Create a list of producer-consumers to execute concurrently
-producer_consumer_list = [readPins,
-                          interpretData,
-                          controlServo,
+producer_consumer_list = [readPins_gray,
+                          interpretData_gray,
+                          controlServo_gray,
+                          readPins_ult,
+                          interpretData_ult,
+                          controlServo_ult,
                           printBuses,
                           terminationTimer]
 
