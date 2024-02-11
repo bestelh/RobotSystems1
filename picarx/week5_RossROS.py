@@ -20,7 +20,7 @@ px = Picarx()
 
 """ First Part: Signal reading and processing functions """
 
-class Sensing():
+class Gray_Sensing():
 
     def __init__(self):
             self.chn_0 = ADC('A0')
@@ -42,7 +42,7 @@ class Sensing():
     def read(self):
         return self.get_grayscale_data()
 
-class Interpreter():
+class Gray_Interpreter():
      
     def __init__(self,sensitivity=0.7, polarity=-1):
         self.sensitivity = sensitivity
@@ -74,7 +74,7 @@ class Interpreter():
         else:
             return None  # Return None if the interpreted readings do not match any known pattern
 
-class Controller():
+class Gray_Controller():
     def __init__(self,scaling=1.0):
         self.scaling = scaling
 
@@ -92,9 +92,9 @@ class Controller():
             px.set_dir_servo_angle(30*self.scaling)
 
 """ Second Part: Create buses for passing data """
-sensor = Sensing()
-interpreter = Interpreter(sensitivity=0.95, polarity=-1) #light line (-1) , dark line (1)
-controller=Controller(scaling=1)
+sensor = Gray_Sensing()
+interpreter = Gray_Interpreter(sensitivity=0.95, polarity=-1) #light line (-1) , dark line (1)
+controller= Gray_Controller(scaling=1)
 
 # Initiate data and termination busses
 bSensing = rr.Bus(sensor.read(), "Sensing bus")
