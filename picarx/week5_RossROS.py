@@ -23,7 +23,7 @@ class Gray_Sensing():
         adc_value_0 = self.chn_0.read()
         adc_value_1 = self.chn_1.read()
         adc_value_2 = self.chn_2.read()
-        print(f"ADC values: {adc_value_0}, {adc_value_1}, {adc_value_2}")
+        #print(f"ADC values: {adc_value_0}, {adc_value_1}, {adc_value_2}")
         adc_value_list.append(adc_value_0)
         adc_value_list.append(adc_value_1)
         adc_value_list.append(adc_value_2)
@@ -131,18 +131,7 @@ class Ult_Control():
             px.stop
         else:
             px.forward(speed)
-
-class Stop_Motors():
-    def __init__(self):
-        pass
-
-    def stop(self, signal):
-        if signal == 1:
-            px.forward(0)
-            px.set_dir_servo_angle(0)
-            px.stop()
             
-                  
 """ Second Part: Create buses for passing data """
 gray_sensor = Gray_Sensing()
 gray_interpreter = Gray_Interpreter(sensitivity=0.95, polarity=-1) #light line (-1) , dark line (1)
@@ -151,8 +140,6 @@ gray_controller= Gray_Controller(scaling=1)
 ult_sensor = Ult_Sensing()
 ult_interpreter = Ult_Interpreting()
 ult_controller = Ult_Control()
-
-stop_motors = Stop_Motors()
 
 # Initiate data and termination busses
 bGray_Sensing = rr.Bus(gray_sensor.read(), "Sensing bus")
@@ -164,9 +151,7 @@ bUlt_Interpreting = rr.Bus(ult_interpreter.interpret(ult_sensor.read()), "Interp
 bUlt_Controller = rr.Bus(ult_controller.controller(ult_interpreter.interpret(ult_sensor.read())), "Controller bus")
 
 bTerminate = rr.Bus(0, "Termination Bus")
-
-bStop_Motors = rr.Bus(stop_motors.stop(bTerminate.read()), "Stop Motors bus")
-
+ 
 """ Third Part: Wrap functions into RossROS objects """
 
 # Wrap the sensing greyscale data into a producer
@@ -216,24 +201,18 @@ controlServo_ult = rr.Consumer(
     bTerminate,  # bus to watch for termination signal
     "Move direction servo")
 
-stopMotors = rr.Consumer(
-    stop_motors.stop,  # function that will process data
-    bTerminate,  # input data buses
-    0.016,  # delay between data control cycles
-    bTerminate,  # bus to watch for termination signal
-    "Stop Motors")
 
 
 """ Fourth Part: Create RossROS Printer and Timer objects """
 
 # Make a printer that returns the most recent wave and product values
-# printBuses = rr.Printer(
-#     (bGray_Sensing, bGray_Interpreter, bTerminate),  # input data buses
-#     # bMultiplied,      # input data buses
-#     0.25,  # delay between printing cycles
-#     bTerminate,  # bus to watch for termination signal
-#     "Print raw and derived data",  # Name of printer
-#     "Data bus readings are: ")  # Prefix for output
+printBuses = rr.Printer(
+    (bGray_Sensing, bGray_Interpreter, bTerminate),  # input data buses
+    # bMultiplied,      # input data buses
+    0.25,  # delay between printing cycles
+    bTerminate,  # bus to watch for termination signal
+    "Print raw and derived data",  # Name of printer
+    "Data bus readings are: ")  # Prefix for output
 
 # Make a timer (a special kind of producer) that turns on the termination
 # bus when it triggers
@@ -253,7 +232,6 @@ producer_consumer_list = [readPins_gray,
                           readPins_ult,
                           interpretData_ult,
                           controlServo_ult,
-                          stopMotors,
                           terminationTimer] # add printBuses, if using printer
 
 # Execute the list of producer-consumers concurrently
