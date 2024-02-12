@@ -3,25 +3,23 @@ import os
 import math
 
 try:
-    from robot_hat import Pin, ADC, PWM, Servo, fileDB
-    from robot_hat import Grayscale_Module, Ultrasonic
-    from robot_hat.utils import reset_mcu, run_command
+    from robot_hat import Pin, ADC, PWM, Servo, fileDB, utils
+    #from robot_hat import Grayscale_Module, Ultrasonic
+    #from robot_hat.utils import reset_mcu, run_command
 except ImportError:
     from sim_robot_hat import Pin, ADC, PWM, Servo, fileDB
-    from sim_robot_hat import Grayscale_Module, Ultrasonic
-    from sim_robot_hat import reset_mcu, run_command
+    #from sim_robot_hat import Grayscale_Module, Ultrasonic
+    #from sim_robot_hat import reset_mcu, run_command
 
-import logging
-logging_format = "%(asctime)s: %(message)s"
-logging.basicConfig(format=logging_format, level=logging.INFO,datefmt="%H:%M:%S")
-logging.getLogger().setLevel(logging.DEBUG)
+# import logging
+# logging_format = "%(asctime)s: %(message)s"
+# logging.basicConfig(format=logging_format, level=logging.INFO,datefmt="%H:%M:%S")
+# logging.getLogger().setLevel(logging.DEBUG)
 
 #from logdecorator import log_on_start, log_on_end, log_on_error
 ###################################
-import atexit
 
-reset_mcu()
-time.sleep(0.2)
+
 
 
 def constrain(x, min_val, max_val):
@@ -33,8 +31,8 @@ def constrain(x, min_val, max_val):
 class Picarx(object):
     CONFIG = '/opt/picar-x/picar-x.conf'
 
-    DEFAULT_LINE_REF = [1000, 1000, 1000]
-    DEFAULT_CLIFF_REF = [500, 500, 500]
+    # DEFAULT_LINE_REF = [1000, 1000, 1000]
+    # DEFAULT_CLIFF_REF = [500, 500, 500]
 
     DIR_MIN = -30
     DIR_MAX = 30
@@ -61,8 +59,8 @@ class Picarx(object):
                 ):
 
         # reset robot_hat
-        # utils.reset_mcu()
-        # time.sleep(0.2)
+        utils.reset_mcu()
+        time.sleep(0.2)
 
         # --------- config_flie ---------
         self.config_flie = fileDB(config, 777, os.getlogin())
@@ -98,8 +96,8 @@ class Picarx(object):
             pin.prescaler(self.PRESCALER)
 
        # --------- grayscale module init ---------
-        adc0, adc1, adc2 = [ADC(pin) for pin in grayscale_pins]
-        self.grayscale = Grayscale_Module(adc0, adc1, adc2, reference=None)
+        # adc0, adc1, adc2 = [ADC(pin) for pin in grayscale_pins]
+        # self.grayscale = Grayscale_Module(adc0, adc1, adc2, reference=None)
         # # get reference
         # self.line_reference = self.config_flie.get("line_reference", default_value=str(self.DEFAULT_LINE_REF))
         # self.line_reference = [float(i) for i in self.line_reference.strip().strip('[]').split(',')]
@@ -109,8 +107,8 @@ class Picarx(object):
         # self.grayscale.reference(self.line_reference)
 
         # --------- ultrasonic init ---------
-        tring, echo= ultrasonic_pins
-        self.ultrasonic = Ultrasonic(Pin(tring), Pin(echo))
+        # tring, echo= ultrasonic_pins
+        # self.ultrasonic = Ultrasonic(Pin(tring), Pin(echo))
         
     def set_motor_speed(self, motor, speed):
         ''' set motor speed
@@ -271,8 +269,8 @@ class Picarx(object):
             self.motor_speed_pins[1].pulse_width_percent(0)
             time.sleep(0.002)
 
-    def get_distance(self):
-        return self.ultrasonic.read()
+    # def get_distance(self):
+    #     return self.ultrasonic.read()
 
     # def set_grayscale_reference(self, value):
     #     if isinstance(value, list) and len(value) == 3:
@@ -304,13 +302,13 @@ class Picarx(object):
     #     else:
     #         raise ValueError("grayscale reference must be a 1*3 list")
         
-    def stopping_motors(self):
-        self.set_motor_speed(1, 0)
-        self.set_motor_speed(2, 0)
+    # def stopping_motors(self):
+    #     self.set_motor_speed(1, 0)
+    #     self.set_motor_speed(2, 0)
 
 if __name__ == "__main__":
     px = Picarx()
-    px.stop()
+    #px.stop()
 
 
 

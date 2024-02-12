@@ -1,20 +1,11 @@
 import rossros as rr
-import logging
-import time
-import math
 import time
 from picarx_improved import Picarx
-from readerwriterlock import rwlock
 
 try:
     from robot_hat import ADC, Pin
-    from robot_hat.utils import reset_mcu, run_command
 except ImportError:
     from sim_robot_hat import ADC, Pin
-    from sim_robot_hat import reset_mcu, run_command
-
-# logging.getLogger().setLevel(logging.DEBUG)
-logging.getLogger().setLevel(logging.INFO)
 
 px = Picarx()
 
@@ -32,7 +23,7 @@ class Gray_Sensing():
         adc_value_0 = self.chn_0.read()
         adc_value_1 = self.chn_1.read()
         adc_value_2 = self.chn_2.read()
-        #print(f"ADC values: {adc_value_0}, {adc_value_1}, {adc_value_2}")
+        print(f"ADC values: {adc_value_0}, {adc_value_1}, {adc_value_2}")
         adc_value_list.append(adc_value_0)
         adc_value_list.append(adc_value_1)
         adc_value_list.append(adc_value_2)
@@ -126,7 +117,7 @@ class Ult_Interpreting():
 
     def interpret(self, data):
         if data == -1:
-            return -1000
+            return 1000
         cm = round(data * 340 / 2 * 100, 2)
         return cm
     
@@ -160,14 +151,14 @@ bUlt_Interpreting = rr.Bus(ult_interpreter.interpret(ult_sensor.read()), "Interp
 bUlt_Controller = rr.Bus(ult_controller.controller(ult_interpreter.interpret(ult_sensor.read())), "Controller bus")
 
 bTerminate = rr.Bus(0, "Termination Bus")
-
+ 
 """ Third Part: Wrap functions into RossROS objects """
 
 # Wrap the sensing greyscale data into a producer
 readPins_gray = rr.Producer(
     gray_sensor.get_grayscale_data,  # function that will generate data
     bGray_Sensing,  # output data bus
-    0.05,  # delay between data generation cycles
+    0.001,  # delay between data generation cycles
     bTerminate,  # bus to watch for termination signal
     "Read pin data from greyscale module")
 
@@ -176,7 +167,7 @@ interpretData_gray = rr.ConsumerProducer(
     gray_interpreter.process_sensor_data,  # function that will process data
     bGray_Sensing,  # input data buses
     bGray_Interpreter,  # output data bus
-    0.1,  # delay between data control cycles
+    0.005,  # delay between data control cycles
     bTerminate,  # bus to watch for termination signal
     "Interpret grayscale data")
 
@@ -184,14 +175,14 @@ interpretData_gray = rr.ConsumerProducer(
 controlServo_gray = rr.Consumer(
     gray_controller.control,  # function that will process data
     bGray_Interpreter,  # input data buses
-    1,  # delay between data control cycles
+    0.01,  # delay between data control cycles
     bTerminate,  # bus to watch for termination signal
     "Move direction servo")
 
 readPins_ult = rr.Producer(
     ult_sensor.get_ultrasonic_data,  # function that will generate data
     bUlt_Sensing,  # output data bus
-    0.05,  # delay between data generation cycles
+    0.002,  # delay between data generation cycles
     bTerminate,  # bus to watch for termination signal
     "Read pin data from ultrasonic module")
 
@@ -199,14 +190,14 @@ interpretData_ult = rr.ConsumerProducer(
     ult_interpreter.interpret,  # function that will process data
     bUlt_Sensing,  # input data buses
     bUlt_Interpreting,  # output data bus
-    0.1,  # delay between data control cycles
+    0.008,  # delay between data control cycles
     bTerminate,  # bus to watch for termination signal
     "Interpret ultrasonic data")
 
 controlServo_ult = rr.Consumer(
     ult_controller.controller,  # function that will process data
     bUlt_Interpreting,  # input data buses
-    1,  # delay between data control cycles
+    0.02,  # delay between data control cycles
     bTerminate,  # bus to watch for termination signal
     "Move direction servo")
 
@@ -215,13 +206,13 @@ controlServo_ult = rr.Consumer(
 """ Fourth Part: Create RossROS Printer and Timer objects """
 
 # Make a printer that returns the most recent wave and product values
-printBuses = rr.Printer(
-    (bGray_Sensing, bGray_Interpreter, bTerminate),  # input data buses
-    # bMultiplied,      # input data buses
-    0.25,  # delay between printing cycles
-    bTerminate,  # bus to watch for termination signal
-    "Print raw and derived data",  # Name of printer
-    "Data bus readings are: ")  # Prefix for output
+# printBuses = rr.Printer(
+#     (bGray_Sensing, bGray_Interpreter, bTerminate),  # input data buses
+#     # bMultiplied,      # input data buses
+#     0.25,  # delay between printing cycles
+#     bTerminate,  # bus to watch for termination signal
+#     "Print raw and derived data",  # Name of printer
+#     "Data bus readings are: ")  # Prefix for output
 
 # Make a timer (a special kind of producer) that turns on the termination
 # bus when it triggers
@@ -241,8 +232,7 @@ producer_consumer_list = [readPins_gray,
                           readPins_ult,
                           interpretData_ult,
                           controlServo_ult,
-                          printBuses,
-                          terminationTimer]
+                          terminationTimer] # add printBuses, if using printer
 
 # Execute the list of producer-consumers concurrently
 rr.runConcurrently(producer_consumer_list)
