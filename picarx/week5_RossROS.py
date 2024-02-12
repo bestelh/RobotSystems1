@@ -131,7 +131,18 @@ class Ult_Control():
             px.stop
         else:
             px.forward(speed)
+
+class Stop_Motors():
+    def __init__(self):
+        pass
+
+    def stop(self, signal):
+        if signal == 1:
+            px.forward(0)
+            px.set_dir_servo_angle(0)
+            px.stop()
             
+                  
 """ Second Part: Create buses for passing data """
 gray_sensor = Gray_Sensing()
 gray_interpreter = Gray_Interpreter(sensitivity=0.95, polarity=-1) #light line (-1) , dark line (1)
@@ -140,6 +151,8 @@ gray_controller= Gray_Controller(scaling=1)
 ult_sensor = Ult_Sensing()
 ult_interpreter = Ult_Interpreting()
 ult_controller = Ult_Control()
+
+stop_motors = Stop_Motors()
 
 # Initiate data and termination busses
 bGray_Sensing = rr.Bus(gray_sensor.read(), "Sensing bus")
@@ -151,7 +164,9 @@ bUlt_Interpreting = rr.Bus(ult_interpreter.interpret(ult_sensor.read()), "Interp
 bUlt_Controller = rr.Bus(ult_controller.controller(ult_interpreter.interpret(ult_sensor.read())), "Controller bus")
 
 bTerminate = rr.Bus(0, "Termination Bus")
- 
+
+bStop_Motors = rr.Bus(stop_motors.stop(bTerminate.read()), "Stop Motors bus")
+
 """ Third Part: Wrap functions into RossROS objects """
 
 # Wrap the sensing greyscale data into a producer
@@ -201,6 +216,12 @@ controlServo_ult = rr.Consumer(
     bTerminate,  # bus to watch for termination signal
     "Move direction servo")
 
+stopMotors = rr.Consumer(
+    stop_motors.stop,  # function that will process data
+    bTerminate,  # input data buses
+    0.016,  # delay between data control cycles
+    bTerminate,  # bus to watch for termination signal
+    "Stop Motors")
 
 
 """ Fourth Part: Create RossROS Printer and Timer objects """
@@ -232,6 +253,7 @@ producer_consumer_list = [readPins_gray,
                           readPins_ult,
                           interpretData_ult,
                           controlServo_ult,
+                          stopMotors,
                           terminationTimer] # add printBuses, if using printer
 
 # Execute the list of producer-consumers concurrently
