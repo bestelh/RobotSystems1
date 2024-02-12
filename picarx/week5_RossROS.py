@@ -32,7 +32,7 @@ class Gray_Sensing():
         adc_value_0 = self.chn_0.read()
         adc_value_1 = self.chn_1.read()
         adc_value_2 = self.chn_2.read()
-        print(f"ADC values: {adc_value_0}, {adc_value_1}, {adc_value_2}")
+        #print(f"ADC values: {adc_value_0}, {adc_value_1}, {adc_value_2}")
         adc_value_list.append(adc_value_0)
         adc_value_list.append(adc_value_1)
         adc_value_list.append(adc_value_2)
@@ -60,11 +60,11 @@ class Gray_Interpreter():
         if interpreted_readings == [0, 1, 0]:
             return 0
         elif interpreted_readings == [0, 1, 1]:
-            return 0.5
+            return 1
         elif interpreted_readings == [0, 0, 1]:
             return 1
         elif interpreted_readings == [1, 1, 0]:
-            return -0.5
+            return -1
         elif interpreted_readings == [1, 0, 0]:
             return -1
         elif interpreted_readings == [1, 1, 1]:
@@ -86,10 +86,10 @@ class Gray_Controller():
             px.set_dir_servo_angle(30*self.scaling)
         elif value == -1:
             px.set_dir_servo_angle(-30*self.scaling)
-        elif value == -0.5:
-            px.set_dir_servo_angle(-30*self.scaling)
-        elif value == 0.5:
-            px.set_dir_servo_angle(30*self.scaling)
+        # elif value == -0.5:
+        #     px.set_dir_servo_angle(-30*self.scaling)
+        # elif value == 0.5:
+        #     px.set_dir_servo_angle(30*self.scaling)
 
 class Ult_Sensing():
     def __init__(self, timeout=0.02):
